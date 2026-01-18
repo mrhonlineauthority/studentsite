@@ -1,186 +1,1428 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M.R.H Authority Result System</title>
-<style>
-body { font-family: Times New Roman; background: #f5f5f5; margin:0; padding:20px;}
-.container { max-width:800px; margin:auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-h1 { text-align:center; color:#d63384; }
-.form-group { margin-bottom:15px; }
-label { display:block; margin-bottom:5px; }
-input[type="text"], input[type="number"] { width:100%; padding:8px; box-sizing:border-box; }
-button { background:#d63384; color:white; padding:10px 15px; border:none; cursor:pointer; border-radius:5px; }
-button:hover { background:#a52a6a; }
-#resultCard { margin-top:20px; display:none; border:2px solid #d63384; padding:20px; border-radius:8px; background:#fff0f5; }
-#resultCard h2, #resultCard h3 { text-align:center; }
-table { width:100%; border-collapse:collapse; margin-top:10px; }
-table, th, td { border:1px solid #d63384; }
-th, td { padding:8px; text-align:center; }
-.print-btn { margin-top:15px; display:block; width:100%; text-align:center; }
-@media print {
-  body * { visibility:hidden; }
-  #resultCard, #resultCard * { visibility:visible; }
-  #resultCard { position:fixed; top:0; left:0; width:100%; height:100%; margin:0; padding:20px; box-sizing:border-box; border:none; border-radius:0; background:#fff; }
-  table, th, td { border:1px solid #000; font-size:12pt; }
-  h2,h3,p { page-break-inside:avoid; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>M.R.H Online - Check Your Result</title>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIFr5IOPhVXY6ctkZnrRCeCUY98I1J5Z0",
+            authDomain: "result-service-96585.firebaseapp.com",
+            databaseURL: "https://result-service-96585-default-rtdb.firebaseio.com",
+            projectId: "result-service-96585",
+            storageBucket: "result-service-96585.firebasestorage.app",
+            messagingSenderId: "650010299838",
+            appId: "1:650010299838:web:55e7a011988f135679bdef",
+            measurementId: "G-77WX9C7NE6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.firebase = { database, ref, get };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .main-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 25px 20px;
+            background: linear-gradient(to right, #1a2980, #26d0ce);
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(26, 41, 128, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, #ff9a00, #ff0080);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            color: #ffd700;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+        }
+
+        .header-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Timer Container */
+        .timer-container {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.3);
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .timer-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .timer-title i {
+            font-size: 1.5rem;
+        }
+
+        .timer-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .timer-unit {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 80px;
+        }
+
+        .timer-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .form-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #26d0ce, #1a2980);
+            border-radius: 2px;
+        }
+
+        /* Input Groups */
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .input-field:focus {
+            border-color: #26d0ce;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(38, 208, 206, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-field::placeholder {
+            color: #95a5a6;
+        }
+
+        /* Examination Select Field */
+        select.input-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 18px;
+            padding-right: 50px;
+            cursor: pointer;
+        }
+
+        select.input-field option {
+            padding: 12px;
+            background: white;
+            color: #333;
+        }
+
+        /* Solve Match Container */
+        .math-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 2px dashed #26d0ce;
+            text-align: center;
+        }
+
+        .math-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .math-title i {
+            color: #1a2980;
+        }
+
+        .math-problem {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2980;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .math-input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .math-input {
+            width: 120px;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        .math-input:focus {
+            border-color: #26d0ce;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(38, 208, 206, 0.1);
+            transform: scale(1.05);
+        }
+
+        .math-hint {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Button Styles */
+        .submit-btn {
+            background: linear-gradient(to right, #1a2980, #26d0ce);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(26, 41, 128, 0.3);
+            background: linear-gradient(to right, #26d0ce, #1a2980);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn i {
+            font-size: 1.2rem;
+        }
+
+        .submit-btn:disabled {
+            background: linear-gradient(to right, #7f8c8d, #95a5a6);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Result Container - Initially Hidden */
+        .result-container {
+            display: none;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* A4 Result Card Styles - Your Provided Design */
+        .result-card-a4 {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        /* Header */
+        .card-header {
+            text-align: center;
+            border-bottom: 3px solid #4b0082;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .card-header h1 {
+            margin: 5px 0;
+            font-weight: 700;
+            font-size: 26px;
+            color: #4b0082;
+        }
+        .card-header h3 {
+            margin: 5px 0;
+            font-weight: 500;
+            font-size: 18px;
+            color: #ff4500;
+        }
+
+        /* Student Info Heading */
+        .student-info-header {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #4b0082;
+            text-decoration: underline;
+            margin-bottom: 15px;
+        }
+
+        /* Student Info Table */
+        .student-info {
+            margin: 10px auto;
+            width: 90%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            text-align: center;
+            font-size: 14px;
+        }
+        .student-info th, .student-info td {
+            border: 1px solid #4b0082;
+            padding: 10px;
+            word-wrap: break-word;
+        }
+        .student-info th {
+            background: linear-gradient(90deg, #ff7f50, #ffb347);
+            color: #fff;
+        }
+        .student-info td {
+            background: #fff0f5;
+        }
+
+        /* Grade Sheet Header */
+        .grade-sheet-header {
+            text-align: center;
+            margin-top: 30px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #4b0082;
+            text-decoration: underline;
+            margin-bottom: 15px;
+        }
+
+        /* Grade Sheet Table */
+        .grade-sheet {
+            margin-top: 10px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 14px;
+        }
+        .grade-sheet th, .grade-sheet td {
+            border: 1px solid #4b0082;
+            padding: 8px;
+        }
+        .grade-sheet th {
+            background: linear-gradient(90deg, #4b0082, #8a2be2);
+            color: #fff;
+        }
+        .grade-sheet td {
+            background: #e6e6fa;
+        }
+
+        /* Footer Section */
+        .card-footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px dashed #ddd;
+            text-align: center;
+        }
+
+        .official-stamp {
+            display: inline-block;
+            border: 3px solid #4b0082;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-weight: 700;
+            color: #4b0082;
+            margin-bottom: 20px;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+
+        /* Print Button */
+        .print-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed #e1e8ed;
+        }
+
+        .print-btn {
+            background: linear-gradient(90deg, #4b0082, #8a2be2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px 45px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(75, 0, 130, 0.3);
+        }
+
+        .print-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(75, 0, 130, 0.4);
+        }
+
+        .print-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .print-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* Message Styles */
+        .message {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.error {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .message.success {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+        }
+
+        .message.warning {
+            background: linear-gradient(to right, #FFA000, #FFCA28);
+            color: white;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #26d0ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: linear-gradient(to right, #7f8c8d, #95a5a6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(127, 140, 141, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 40px;
+        }
+
+        .footer p {
+            margin-bottom: 10px;
+        }
+
+        /* Print Styles for A4 */
+        @media print {
+            body * {
+                visibility: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .result-container,
+            .result-container * {
+                visibility: visible;
+            }
+            
+            .result-card-a4 {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 20mm;
+                box-shadow: none;
+                border: none;
+                page-break-inside: avoid;
+                page-break-after: avoid;
+            }
+            
+            .print-btn,
+            .back-btn,
+            .form-container,
+            .main-header,
+            .footer,
+            .message,
+            .timer-container {
+                display: none !important;
+            }
+            
+            /* Ensure A4 paper size */
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .main-header {
+                padding: 20px 15px;
+                margin-bottom: 25px;
+            }
+            
+            .header-title {
+                font-size: 1.8rem;
+            }
+            
+            .header-subtitle {
+                font-size: 1rem;
+            }
+            
+            .timer-container {
+                padding: 15px;
+            }
+            
+            .timer-unit {
+                min-width: 70px;
+                padding: 12px;
+            }
+            
+            .timer-value {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .form-title {
+                font-size: 1.5rem;
+            }
+            
+            .math-container {
+                padding: 20px;
+            }
+            
+            .math-problem {
+                font-size: 1.5rem;
+                padding: 15px;
+            }
+            
+            .math-input {
+                width: 100px;
+                padding: 12px;
+                font-size: 1.3rem;
+            }
+            
+            .input-field {
+                padding: 16px;
+            }
+            
+            /* For mobile, adjust A4 card */
+            .result-card-a4 {
+                width: 100%;
+                min-height: auto;
+                padding: 15px;
+            }
+            
+            .card-header h1 {
+                font-size: 22px;
+            }
+            
+            .card-header h3 {
+                font-size: 16px;
+            }
+            
+            .student-info,
+            .grade-sheet {
+                font-size: 12px;
+                width: 100%;
+            }
+            
+            .student-info th,
+            .student-info td,
+            .grade-sheet th,
+            .grade-sheet td {
+                padding: 8px;
+                font-size: 11px;
+            }
+            
+            .print-btn,
+            .submit-btn {
+                padding: 16px 25px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-header {
+                padding: 15px 10px;
+            }
+            
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .logo-icon {
+                font-size: 2rem;
+            }
+            
+            .timer-unit {
+                min-width: 60px;
+                padding: 10px;
+            }
+            
+            .timer-value {
+                font-size: 1.8rem;
+            }
+            
+            .math-container {
+                padding: 15px;
+            }
+            
+            .math-problem {
+                font-size: 1.3rem;
+                padding: 12px;
+            }
+            
+            .math-input {
+                width: 90px;
+                padding: 10px;
+                font-size: 1.2rem;
+            }
+            
+            .form-container {
+                padding: 20px 15px;
+            }
+            
+            .result-card-a4 {
+                padding: 10px;
+            }
+            
+            .card-header h1 {
+                font-size: 18px;
+            }
+            
+            .card-header h3 {
+                font-size: 14px;
+            }
+            
+            .student-info,
+            .grade-sheet {
+                display: block;
+                overflow-x: auto;
+                font-size: 10px;
+            }
+            
+            .student-info-header,
+            .grade-sheet-header {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<h1>M.R.H Authority</h1>
-<p id="timerNotice" style="text-align:center; font-weight:bold; color:#d63384;"></p>
+    <div class="app-container">
+        <!-- Main Header -->
+        <header class="main-header">
+            <div class="logo">
+                <i class="fas fa-university logo-icon"></i>
+                <div>
+                    <h1 class="header-title">M.R.H Online Registration Authority</h1>
+                    <p class="header-subtitle">Check Your Result</p>
+                </div>
+            </div>
+        </header>
 
-<div class="form" id="entryForm">
-  <div class="form-group">
-    <label for="roll">Roll No:</label>
-    <input type="text" id="roll">
-  </div>
-  <div class="form-group">
-    <label for="reg">Registration No:</label>
-    <input type="text" id="reg">
-  </div>
-  <div class="form-group">
-    <label for="captcha">Solve: <span id="captchaQuestion"></span></label>
-    <input type="text" id="captcha">
-  </div>
-  <button id="checkBtn" onclick="checkResult()" disabled>Check Result</button>
-</div>
+        <!-- Timer Container -->
+        <div class="timer-container" id="timerContainer">
+            <h2 class="timer-title">
+                <i class="fas fa-clock"></i>
+                Result Publishing Countdown
+            </h2>
+            <div class="timer-display">
+                <div class="timer-unit">
+                    <div class="timer-value" id="days">00</div>
+                    <div class="timer-label">Days</div>
+                </div>
+                <div class="timer-unit">
+                    <div class="timer-value" id="hours">00</div>
+                    <div class="timer-label">Hours</div>
+                </div>
+                <div class="timer-unit">
+                    <div class="timer-value" id="minutes">00</div>
+                    <div class="timer-label">Minutes</div>
+                </div>
+                <div class="timer-unit">
+                    <div class="timer-value" id="seconds">00</div>
+                    <div class="timer-label">Seconds</div>
+                </div>
+            </div>
+            <p style="margin-top: 15px; opacity: 0.9;">Result will be published on <strong id="publishDate">DD/MM/YYYY</strong> at <strong id="publishTime">00:00:00</strong></p>
+        </div>
 
-<div id="resultCard">
-<h2>M.R.H Authority</h2>
-<p><strong>Name:</strong> <span id="rName"></span></p>
-<p><strong>Roll:</strong> <span id="rRoll"></span></p>
-<p><strong>Board:</strong> <span id="rBoard"></span></p>
-<p><strong>Group:</strong> <span id="rGroup"></span></p>
-<p><strong>Date Of Birth:</strong> <span id="rDOB"></span></p>
-<p><strong>Exam And Year:</strong> <span id="rExam"></span></p>
-<p><strong>Result:</strong> <span id="rResult"></span></p>
-<p><strong>GPA:</strong> <span id="rGPA"></span></p>
+        <!-- Check Form -->
+        <div class="form-container" id="checkForm">
+            <h2 class="form-title">Enter Your Details</h2>
+            
+            <div id="formMessage" class="message"></div>
+            
+            <div class="input-group">
+                <label class="input-label">Registration Number</label>
+                <input type="text" id="regNo" class="input-field" placeholder="Enter your registration number" required>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Roll Number</label>
+                <input type="text" id="rollNo" class="input-field" placeholder="Enter your roll number" required>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Examination</label>
+                <select id="examination" class="input-field" required>
+                    <option value="">Select Examination Type</option>
+                    <option value="Final">Final</option>
+                    <option value="5 Year">5 Year</option>
+                </select>
+            </div>
+            
+            <!-- Solve Match Section -->
+            <div class="math-container" id="mathContainer">
+                <h3 class="math-title">
+                    <i class="fas fa-calculator"></i>
+                    Solve Match
+                </h3>
+                <div class="math-problem" id="mathProblem">5 + 8 = ?</div>
+                <div class="math-input-container">
+                    <input type="number" id="mathAnswer" class="math-input" placeholder="Answer" required>
+                    <div style="font-size: 1.5rem; color: #1a2980;">= ?</div>
+                </div>
+                <p class="math-hint">Solve the math problem to verify you're not a robot</p>
+            </div>
+            
+            <button id="checkBtn" class="submit-btn">
+                <i class="fas fa-search"></i> Check Result
+            </button>
+        </div>
 
-<h3>Grade Sheet</h3>
-<table>
-<thead>
-<tr><th>Code</th><th>Subject</th><th>Grade</th></tr>
-</thead>
-<tbody id="gradeTable"></tbody>
-</table>
+        <!-- Loading Spinner -->
+        <div class="loading" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>Fetching your result...</p>
+        </div>
 
-<div class="print-btn">
-<button onclick="window.print()">Print Result</button>
-</div>
-</div>
-</div>
+        <!-- Result Container -->
+        <div class="result-container" id="resultContainer">
+            <!-- A4 Result Card - Your Design -->
+            <div class="result-card-a4">
+                <!-- Header -->
+                <div class="card-header">
+                    <h1>M.R.H ONLINE Registration Authority</h1>
+                    <h3>Students Result Card</h3>
+                </div>
 
-<script>
-// একাধিক ছাত্রের ডেটা, 6টি বিষয়
-const students = [
-  {
-    roll: "990011",
-    reg: "1234567890",
-    name: "Md. Riad",
-    board: "Dhaka",
-    group: "Science",
-    dob: "2005-05-22",
-    exam: "SSC 2025",
-    result: "Pass",
-    gpa: "5.00",
-    grades: [
-      {code: "101", subject: "Bangla", grade: "A+"},
-      {code: "102", subject: "English", grade: "A+"},
-      {code: "103", subject: "Mathematics", grade: "A+"},
-      {code: "104", subject: "Physics", grade: "A+"},
-      {code: "105", subject: "Chemistry", grade: "A+"},
-      {code: "106", subject: "Biology", grade: "A+"}
-    ]
-  },
-  {
-    roll: "990012",
-    reg: "0000000000",
-    name: "Sajid",
-    board: "Dhaka",
-    group: "Commerce",
-    dob: "2005-07-18",
-    exam: "SSC 2025",
-    result: "Pass",
-    gpa: "4.75",
-    grades: [
-      {code: "101", subject: "Bangla", grade: "A"},
-      {code: "102", subject: "English", grade: "A"},
-      {code: "103", subject: "Accounting", grade: "A+"},
-      {code: "104", subject: "Economics", grade: "A"},
-      {code: "105", subject: "Business Studies", grade: "A+"},
-      {code: "106", subject: "ICT", grade: "A"}
-    ]
-  }
-];
+                <!-- Student Info Heading -->
+                <div class="student-info-header">Student Info</div>
 
-// CAPTCHA
-let num1 = Math.floor(Math.random()*10);
-let num2 = Math.floor(Math.random()*10);
-document.getElementById('captchaQuestion').innerText = `${num1} + ${num2} = ?`;
+                <!-- Student Info Table -->
+                <table class="student-info" id="studentInfoTable">
+                    <tr>
+                        <th>Name</th>
+                        <th>Registration No</th>
+                        <th>Roll No</th>
+                        <th>Examination</th>
+                    </tr>
+                    <tr>
+                        <td id="infoName">-</td>
+                        <td id="infoRegNo">-</td>
+                        <td id="infoRollNo">-</td>
+                        <td id="infoExamination">-</td>
+                    </tr>
+                    <tr>
+                        <th>Group</th>
+                        <th>Year</th>
+                        <th>Board</th>
+                        <th>Date of Birth</th>
+                    </tr>
+                    <tr>
+                        <td id="infoGroup">-</td>
+                        <td id="infoYear">-</td>
+                        <td id="infoBoard">-</td>
+                        <td id="infoDob">-</td>
+                    </tr>
+                    <tr>
+                        <th>Result Status</th>
+                        <th>GPA</th>
+                        <th>—</th>
+                        <th>—</th>
+                    </tr>
+                    <tr>
+                        <td id="infoStatus">-</td>
+                        <td id="infoGpa">-</td>
+                        <td>—</td>
+                        <td>—</td>
+                    </tr>
+                </table>
 
-// RESULT PUBLISH DATE & TIME
-let publishDateTime = "2030-01-01 02:00:00pm"; // YYYY-MM-DD hh:mm:ssam/pm
+                <!-- Grade Sheet -->
+                <div class="grade-sheet-header">Grade Sheet</div>
+                <table class="grade-sheet" id="gradeSheetTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Subject Name</th>
+                            <th>Grade</th>
+                            <th>Marks Obtained</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradeTableBody">
+                        <!-- Grades will be populated by JavaScript -->
+                    </tbody>
+                </table>
 
-function parsePublishDateTime(str){
-  let [datePart, timePart] = str.split(" ");
-  let [year, month, day] = datePart.split("-").map(Number);
-  let [h,m,s] = timePart.slice(0,8).split(":").map(Number);
-  let meridian = timePart.slice(8).toLowerCase();
-  if(meridian==="pm" && h<12) h+=12;
-  if(meridian==="am" && h===12) h=0;
-  return new Date(year, month-1, day, h, m, s);
-}
+                <!-- Footer Section -->
+                <div class="card-footer">
+                    <div class="official-stamp">
+                        OFFICIAL RESULT CARD
+                    </div>
+                    <p class="footer-note">
+                        This is an official document issued by M.R.H Online Registration Authority.<br>
+                        Any alteration or forgery of this document is punishable by law.<br>
+                        Result verified and authenticated by the examination controller.
+                    </p>
+                    <p style="color: #666; font-size: 12px; margin-top: 20px;">
+                        Date of Issue: <span id="issueDate">-</span><br>
+                        Result ID: <span id="resultId">-</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Print and Back Buttons -->
+            <div class="print-section">
+                <button id="printBtn" class="print-btn">
+                    <!-- Print SVG Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.1 0-2 .9-2 2v6h4v4h10v-4h4v-6c0-1.1-.9-2-2-2zm-4 10H9v-4h6v4zm3-10V4H6v4h12z"/>
+                    </svg>
+                    Print Result Card
+                </button>
+                
+                <button id="backBtn" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Check Another Result
+                </button>
+            </div>
+        </div>
 
-function checkTimer(){
-  const now = new Date();
-  const target = parsePublishDateTime(publishDateTime);
-  let diff = target-now;
-  if(diff<=0){
-    document.getElementById("timerNotice").innerText="Result is now available!";
-    document.getElementById("checkBtn").disabled=false;
-  } else {
-    const days=Math.floor(diff/1000/3600/24);
-    const hrs=Math.floor((diff/1000/3600)%24);
-    const mins=Math.floor((diff/1000/60)%60);
-    const secs=Math.floor(diff/1000%60);
-    document.getElementById("timerNotice").innerText=`Result will be published in ${days}d ${hrs}h ${mins}m ${secs}s`;
-    document.getElementById("checkBtn").disabled=true;
-  }
-}
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const checkForm = document.getElementById('checkForm');
+            const resultContainer = document.getElementById('resultContainer');
+            const checkBtn = document.getElementById('checkBtn');
+            const printBtn = document.getElementById('printBtn');
+            const backBtn = document.getElementById('backBtn');
+            const regNoInput = document.getElementById('regNo');
+            const rollNoInput = document.getElementById('rollNo');
+            const examinationSelect = document.getElementById('examination');
+            const formMessage = document.getElementById('formMessage');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            // Student Info Elements
+            const studentInfoTable = {
+                name: document.getElementById('infoName'),
+                regNo: document.getElementById('infoRegNo'),
+                rollNo: document.getElementById('infoRollNo'),
+                examination: document.getElementById('infoExamination'),
+                group: document.getElementById('infoGroup'),
+                year: document.getElementById('infoYear'),
+                board: document.getElementById('infoBoard'),
+                dob: document.getElementById('infoDob'),
+                status: document.getElementById('infoStatus'),
+                gpa: document.getElementById('infoGpa')
+            };
+            
+            // Other Elements
+            const gradeTableBody = document.getElementById('gradeTableBody');
+            const issueDateElement = document.getElementById('issueDate');
+            const resultIdElement = document.getElementById('resultId');
+            
+            // Math Elements
+            const mathContainer = document.getElementById('mathContainer');
+            const mathProblemElement = document.getElementById('mathProblem');
+            const mathAnswerInput = document.getElementById('mathAnswer');
+            
+            // Timer Elements
+            const timerContainer = document.getElementById('timerContainer');
+            const daysElement = document.getElementById('days');
+            const hoursElement = document.getElementById('hours');
+            const minutesElement = document.getElementById('minutes');
+            const secondsElement = document.getElementById('seconds');
+            const publishDateElement = document.getElementById('publishDate');
+            const publishTimeElement = document.getElementById('publishTime');
 
-setInterval(checkTimer,1000);
+            // ==============================
+            // SET YOUR RESULT PUBLISH TIME HERE
+            // Format: "YYYY-MM-DDTHH:MM:SS"
+            // Example: "2024-06-30T12:00:00"
+            // ==============================
+            const RESULT_PUBLISH_TIME = "2024-12-31T10:00:00";
+            // ==============================
 
-// CHECK RESULT FUNCTION
-function checkResult(){
-  const roll=document.getElementById('roll').value.trim();
-  const reg=document.getElementById('reg').value.trim();
-  const captchaAnswer=document.getElementById('captcha').value.trim();
-  if(captchaAnswer!=(num1+num2)){
-    alert("CAPTCHA ভুল হয়েছে।");
-    return;
-  }
-  const student=students.find(s=>s.roll===roll && s.reg===reg);
-  if(!student){ alert("Student data found নয়।"); return; }
-  document.getElementById('entryForm').style.display="none";
-  document.getElementById('rName').innerText=student.name;
-  document.getElementById('rRoll').innerText=student.roll;
-  document.getElementById('rBoard').innerText=student.board;
-  document.getElementById('rGroup').innerText=student.group;
-  document.getElementById('rDOB').innerText=student.dob;
-  document.getElementById('rExam').innerText=student.exam;
-  document.getElementById('rResult').innerText=student.result;
-  document.getElementById('rGPA').innerText=student.gpa;
-  const gradeTable=document.getElementById('gradeTable');
-  gradeTable.innerHTML="";
-  student.grades.forEach(g=>{
-    gradeTable.innerHTML+=`<tr><td>${g.code}</td><td>${g.subject}</td><td>${g.grade}</td></tr>`;
-  });
-  document.getElementById('resultCard').style.display="block";
-}
-</script>
+            // Parse the publish time
+            const publishTime = new Date(RESULT_PUBLISH_TIME);
+            
+            // Format date for display
+            const formattedDate = publishTime.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            
+            const formattedTime = publishTime.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            // Update display elements
+            publishDateElement.textContent = formattedDate;
+            publishTimeElement.textContent = formattedTime;
+
+            // Math Problem Variables
+            let currentMathProblem = '';
+            let currentMathAnswer = 0;
+
+            // Grade color mapping
+            const gradeColors = {
+                'A+': '#00b09b',
+                'A': '#2196F3',
+                'A-': '#3a7bd5',
+                'B': '#FFA000',
+                'C': '#FF9800',
+                'D': '#F44336',
+                'F': '#8e44ad'
+            };
+
+            // Generate a random math problem
+            function generateMathProblem() {
+                const operators = ['+', '-', '×', '÷'];
+                const operator = operators[Math.floor(Math.random() * operators.length)];
+                
+                let num1, num2, problem, answer;
+                
+                switch(operator) {
+                    case '+':
+                        num1 = Math.floor(Math.random() * 20) + 1;
+                        num2 = Math.floor(Math.random() * 20) + 1;
+                        problem = `${num1} + ${num2}`;
+                        answer = num1 + num2;
+                        break;
+                        
+                    case '-':
+                        num1 = Math.floor(Math.random() * 30) + 10;
+                        num2 = Math.floor(Math.random() * 10) + 1;
+                        problem = `${num1} - ${num2}`;
+                        answer = num1 - num2;
+                        break;
+                        
+                    case '×':
+                        num1 = Math.floor(Math.random() * 10) + 1;
+                        num2 = Math.floor(Math.random() * 10) + 1;
+                        problem = `${num1} × ${num2}`;
+                        answer = num1 * num2;
+                        break;
+                        
+                    case '÷':
+                        num2 = Math.floor(Math.random() * 8) + 2;
+                        answer = Math.floor(Math.random() * 10) + 1;
+                        num1 = num2 * answer;
+                        problem = `${num1} ÷ ${num2}`;
+                        break;
+                }
+                
+                return { problem, answer };
+            }
+
+            // Generate new math problem
+            function generateNewMathProblem() {
+                const math = generateMathProblem();
+                currentMathProblem = math.problem;
+                currentMathAnswer = math.answer;
+                mathProblemElement.textContent = `${math.problem} = ?`;
+                mathAnswerInput.value = '';
+                mathAnswerInput.focus();
+            }
+
+            // Timer function
+            function updateTimer() {
+                const now = new Date().getTime();
+                const timeRemaining = publishTime - now;
+
+                if (timeRemaining > 0) {
+                    // Calculate days, hours, minutes, seconds
+                    const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+                    // Update timer display
+                    daysElement.textContent = days.toString().padStart(2, '0');
+                    hoursElement.textContent = hours.toString().padStart(2, '0');
+                    minutesElement.textContent = minutes.toString().padStart(2, '0');
+                    secondsElement.textContent = seconds.toString().padStart(2, '0');
+
+                    // Show timer container
+                    timerContainer.style.display = 'block';
+                    
+                    // Disable check button
+                    checkBtn.disabled = true;
+                    checkBtn.innerHTML = '<i class="fas fa-lock"></i> Result Not Published Yet';
+                    
+                } else {
+                    // Time's up - hide timer and enable button
+                    timerContainer.style.display = 'none';
+                    checkBtn.disabled = false;
+                    checkBtn.innerHTML = '<i class="fas fa-search"></i> Check Result';
+                }
+            }
+
+            // Initialize timer
+            updateTimer();
+            setInterval(updateTimer, 1000);
+
+            // Initialize math problem
+            generateNewMathProblem();
+
+            // Show message
+            function showMessage(element, message, type) {
+                element.textContent = message;
+                element.className = `message ${type}`;
+                element.style.display = 'block';
+                
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+
+            // Format date
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            // Get grade color
+            function getGradeColor(grade) {
+                return gradeColors[grade] || '#2196F3';
+            }
+
+            // Generate random result ID
+            function generateResultId() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = '';
+                for (let i = 0; i < 10; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return `MRH-${result}`;
+            }
+
+            // Check result function
+            checkBtn.addEventListener('click', async () => {
+                const regNo = regNoInput.value.trim();
+                const rollNo = rollNoInput.value.trim();
+                const examination = examinationSelect.value;
+                const mathAnswer = parseInt(mathAnswerInput.value.trim());
+
+                if (!regNo || !rollNo || !examination) {
+                    showMessage(formMessage, "Please enter Registration Number, Roll Number and select Examination type", "error");
+                    return;
+                }
+
+                // Check math answer
+                if (isNaN(mathAnswer) || mathAnswer !== currentMathAnswer) {
+                    showMessage(formMessage, "Incorrect math answer. Please solve the math problem correctly.", "error");
+                    generateNewMathProblem();
+                    mathAnswerInput.focus();
+                    return;
+                }
+
+                // Check if result time has arrived
+                const now = new Date().getTime();
+                if (now < publishTime) {
+                    showMessage(formMessage, `Result will be published on ${formattedDate} at ${formattedTime}. Please wait until then.`, "warning");
+                    return;
+                }
+
+                // Show loading
+                loadingSpinner.style.display = 'block';
+                checkForm.style.display = 'none';
+
+                try {
+                    // Generate key for database lookup
+                    const resultKey = `${regNo}_${rollNo}`.replace(/[.#$\/\[\]]/g, '_');
+                    
+                    // Fetch data from Firebase
+                    const dbRef = window.firebase.ref(window.firebase.database, `results/${resultKey}`);
+                    const snapshot = await window.firebase.get(dbRef);
+
+                    if (snapshot.exists()) {
+                        const resultData = snapshot.val();
+                        
+                        // Check if examination matches
+                        if (resultData.examination !== examination) {
+                            loadingSpinner.style.display = 'none';
+                            checkForm.style.display = 'block';
+                            showMessage(formMessage, "Result not found. Please check Examination type.", "error");
+                            generateNewMathProblem();
+                            return;
+                        }
+                        
+                        // Determine status
+                        const statusText = resultData.result === 'Passed' ? 'Passed' : 'Failed';
+                        const statusColor = resultData.result === 'Passed' ? '#00b09b' : '#ff416c';
+                        
+                        // Get group info
+                        const group = resultData.group || 'Humanities';
+                        
+                        // Update student information table
+                        studentInfoTable.name.textContent = resultData.name;
+                        studentInfoTable.regNo.textContent = resultData.regNo;
+                        studentInfoTable.rollNo.textContent = resultData.rollNo;
+                        studentInfoTable.examination.textContent = resultData.examination;
+                        studentInfoTable.group.textContent = group;
+                        studentInfoTable.year.textContent = resultData.year;
+                        studentInfoTable.board.textContent = resultData.board;
+                        studentInfoTable.dob.textContent = formatDate(resultData.dob);
+                        studentInfoTable.status.textContent = statusText;
+                        studentInfoTable.status.style.color = statusColor;
+                        studentInfoTable.status.style.fontWeight = 'bold';
+                        studentInfoTable.gpa.textContent = resultData.gpa;
+                        
+                        // Populate grade sheet table
+                        gradeTableBody.innerHTML = '';
+                        resultData.subjects.forEach((subject, index) => {
+                            const row = document.createElement('tr');
+                            const gradeColor = getGradeColor(subject.grade);
+                            row.innerHTML = `
+                                <td>${subject.code}</td>
+                                <td>${subject.name}</td>
+                                <td style="color: ${gradeColor}; font-weight: bold;">${subject.grade}</td>
+                                <td><strong>${subject.receivedNumber}</strong>/100</td>
+                            `;
+                            gradeTableBody.appendChild(row);
+                        });
+
+                        // Update issue date and result ID
+                        issueDateElement.textContent = new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        resultIdElement.textContent = generateResultId();
+
+                        // Show result container
+                        loadingSpinner.style.display = 'none';
+                        resultContainer.style.display = 'block';
+                        
+                        // Smooth scroll to result
+                        setTimeout(() => {
+                            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 300);
+
+                    } else {
+                        // Result not found
+                        loadingSpinner.style.display = 'none';
+                        checkForm.style.display = 'block';
+                        showMessage(formMessage, "Result not found. Please check your Registration and Roll numbers.", "error");
+                        generateNewMathProblem();
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching result:", error);
+                    loadingSpinner.style.display = 'none';
+                    checkForm.style.display = 'block';
+                    showMessage(formMessage, "An error occurred. Please try again later.", "error");
+                    generateNewMathProblem();
+                }
+            });
+
+            // Print result function
+            printBtn.addEventListener('click', () => {
+                window.print();
+            });
+
+            // Back button function
+            backBtn.addEventListener('click', () => {
+                resultContainer.style.display = 'none';
+                checkForm.style.display = 'block';
+                
+                // Clear inputs and generate new math problem
+                regNoInput.value = '';
+                rollNoInput.value = '';
+                examinationSelect.value = '';
+                generateNewMathProblem();
+                
+                // Scroll to form
+                checkForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            // Enter key support
+            regNoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    rollNoInput.focus();
+                }
+            });
+
+            rollNoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    examinationSelect.focus();
+                }
+            });
+
+            examinationSelect.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    mathAnswerInput.focus();
+                }
+            });
+
+            mathAnswerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkBtn.click();
+                }
+            });
+
+            // Focus first input
+            regNoInput.focus();
+        });
+    </script>
 </body>
-  </html>
+</html>
