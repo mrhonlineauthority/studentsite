@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Kindergarten Registration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root { --primary: #007bff; --dark: #343a40; --success: #28a745; --danger: #dc3545; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
+        .container { max-width: 1250px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .registration-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 40px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #444; }
+        .input-group input, .input-group select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; outline: none; }
+        .full-width { grid-column: span 3; }
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-submit svg { width: 22px; height: 22px; fill: white; }
+        
+        /* Search Box Style */
+        .search-container { margin-bottom: 15px; display: flex; justify-content: flex-end; }
+        .search-box { width: 300px; padding: 10px 15px; border: 2px solid #007bff; border-radius: 25px; outline: none; font-size: 14px; transition: 0.3s; }
+        .search-box:focus { box-shadow: 0 0 10px rgba(0,123,255,0.2); }
+
+        .table-section { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
+        .scroll-box { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        th { background: var(--dark); color: white; padding: 12px; text-align: left; font-size: 13px; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
+        .action-btns { display: flex; gap: 8px; }
+        .act-btn { border: none; padding: 6px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; }
+        .act-btn svg { width: 16px; height: 16px; }
+        .edit-btn { background: #e7f1ff; color: #007bff; }
+        .print-btn { background: #e6ffed; color: #28a745; }
+        .delete-btn { background: #fff5f5; color: #dc3545; }
+        .footer-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; }
+        .pdf-btn { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .pagination { display: flex; gap: 6px; }
+        .page-link { padding: 8px 14px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 5px; }
+        .page-link.active { background: var(--primary); color: white; border-color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Kindergarten Student Registration Form</h1>
+        <p>Student Registration</p>
+    </div>
+
+    <form id="studentForm" class="registration-form">
+        <div class="input-group"><label>Student Name</label><input type="text" id="name" placeholder="Full Name" required></div>
+        <div class="input-group"><label>School Name</label><input type="text" id="school" placeholder="School Name" required></div>
+        <div class="input-group"><label>Religion</label>
+            <select id="religion"><option>Islam</option><option>Hindu</option><option>Buddh</option><option>Christian</option></select>
+        </div>
+        <div class="input-group"><label>Sex</label>
+            <select id="sex"><option>Male</option><option>Female</option></select>
+        </div>
+        <div class="input-group"><label>Blood Group</label>
+            <select id="blood"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+        </div>
+        <div class="input-group"><label>Date Of Birth</label><input type="date" id="dob" required></div>
+        <div class="input-group"><label>Class</label><input type="text" id="class" placeholder="Class" required></div>
+        <div class="input-group"><label>Branch</label><input type="text" id="branch" placeholder="Branch" required></div>
+        <div class="input-group"><label>Roll No</label><input type="number" id="roll" required></div>
+        <div class="input-group"><label>Reg No</label><input type="text" id="reg" required></div>
+        <div class="input-group"><label>Academic Year</label><input type="text" id="year" value="2025-26" required></div>
+        <div class="input-group"><label>Mobile No</label><input type="tel" id="mobile" placeholder="Mobile Number" required></div>
+        
+        <button type="submit" class="btn-submit full-width" id="mainBtn">
+            <svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
+            Submit Registration
+        </button>
+    </form>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search by Reg No..." onkeyup="searchData()">
+    </div>
+
+    <div class="table-section">
+        <div class="scroll-box">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Name</th><th>School</th><th>Religion</th><th>Sex</th><th>Blood</th><th>DOB</th><th>Class</th><th>Branch</th><th>Roll</th><th>Reg No</th><th>Mobile</th><th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer-tools">
+        <button onclick="downloadFullPDF()" class="pdf-btn">
+            <svg viewBox="0 0 24 24" fill="white" width="20"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+            Download PDF Report
+        </button>
+        <div class="pagination" id="paginationBox"></div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyG7QIJyzMMqJzZFMLstS2YeIHi8eRMuti2OpA5SxA33SPtwCbCiD_llUTsqqupJqSgJQ/exec";
+
+    let students = [];
+    let isEditing = null;
+    let currentPage = 1;
+    const limit = 10;
+
+    window.onload = async () => {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center">Loading data...</td></tr>';
+        try {
+            const response = await fetch(WEB_APP_URL);
+            const data = await response.json();
+            students = data.slice(1).map(row => ({
+                name: row[1], religion: row[2], sex: row[3], blood: row[4],
+                dob: row[5], class: row[6], branch: row[7], roll: row[8],
+                reg: row[9], year: row[10], mobile: row[11], school: row[12]
+            }));
+            renderData(students);
+        } catch (err) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center">No Data Found.</td></tr>'; }
+    };
+
+    const form = document.getElementById('studentForm');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('mainBtn');
+        btn.disabled = true;
+
+        const obj = {
+            name: document.getElementById('name').value,
+            school: document.getElementById('school').value,
+            religion: document.getElementById('religion').value,
+            sex: document.getElementById('sex').value,
+            blood: document.getElementById('blood').value,
+            dob: document.getElementById('dob').value,
+            class: document.getElementById('class').value,
+            branch: document.getElementById('branch').value,
+            roll: document.getElementById('roll').value,
+            reg: document.getElementById('reg').value,
+            year: document.getElementById('year').value,
+            mobile: document.getElementById('mobile').value
+        };
+
+        try {
+            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(obj) });
+            if(isEditing !== null) students[isEditing] = obj;
+            else students.push(obj);
+            form.reset();
+            isEditing = null;
+            btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg> Submit Registration`;
+            renderData(students);
+            alert("Successfully Saved!");
+        } catch (err) { alert("Error!"); }
+        btn.disabled = false;
+    };
+
+    // Updated renderData to accept data parameter for searching
+    function renderData(dataToRender) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        let start = (currentPage - 1) * limit;
+        let pagedData = dataToRender.slice(start, start + limit);
+
+        if(pagedData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center">No records found.</td></tr>';
+            return;
+        }
+
+        pagedData.forEach((s, i) => {
+            let idx = students.indexOf(s); // Original index for editing/deleting
+            tbody.innerHTML += `
+                <tr>
+                    <td>${s.name}</td><td>${s.school}</td><td>${s.religion}</td><td>${s.sex}</td><td>${s.blood}</td><td>${s.dob}</td><td>${s.class}</td><td>${s.branch}</td><td>${s.roll}</td><td>${s.reg}</td><td>${s.mobile}</td>
+                    <td class="action-btns">
+                        <button class="act-btn edit-btn" onclick="editData(${idx})"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6.02 20.71,5.63L18.37,3.29C17.98,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"/></svg></button>
+                        <button class="act-btn print-btn" onclick="printSingle(${idx})"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,3H6V7H18M19,12A1,1 0 0,1 18,11A1,1 0 0,1 19,10A1,1 0 0,1 20,11A1,1 0 0,1 19,12M16,19H8V14H16M19,8H5A3,3 0 0,0 2,11V17H6V21H18V17H22V11A3,3 0 0,0 19,8Z"/></svg></button>
+                        <button class="act-btn delete-btn" onclick="deleteData(${idx})"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
+                    </td>
+                </tr>`;
+        });
+        updatePagination(dataToRender.length);
+    }
+
+    // Search function logic
+    function searchData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filteredData = students.filter(s => s.reg.toString().toLowerCase().includes(query));
+        currentPage = 1; // Reset to page 1 on search
+        renderData(filteredData);
+    }
+
+    function editData(i) {
+        const s = students[i];
+        document.getElementById('name').value = s.name;
+        document.getElementById('school').value = s.school;
+        document.getElementById('religion').value = s.religion;
+        document.getElementById('sex').value = s.sex;
+        document.getElementById('blood').value = s.blood;
+        document.getElementById('dob').value = s.dob;
+        document.getElementById('class').value = s.class;
+        document.getElementById('branch').value = s.branch;
+        document.getElementById('roll').value = s.roll;
+        document.getElementById('reg').value = s.reg;
+        document.getElementById('year').value = s.year;
+        document.getElementById('mobile').value = s.mobile;
+        isEditing = i;
+        document.getElementById('mainBtn').innerText = "Update Data";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteData(i) {
+        if(confirm("Are you sure?")) {
+            const r = students[i].reg;
+            students.splice(i, 1);
+            renderData(students);
+            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action: 'delete', regNo: r}) });
+        }
+    }
+
+    function printSingle(i) {
+        const s = students[i];
+        const win = window.open('', '_blank');
+        win.document.write(`<html><body style="font-family:sans-serif; padding:40px; border:2px solid #000">
+            <h2 style="text-align:center">${s.school}</h2><h3 style="text-align:center">Registration Copy</h3><hr>
+            <p><strong>Name:</strong> ${s.name} | <strong>Reg:</strong> ${s.reg}</p>
+            <p><strong>Class:</strong> ${s.class} | <strong>Roll:</strong> ${s.roll}</p>
+            <p><strong>Mobile:</strong> ${s.mobile}</p>
+            <script>window.print();<\/script></body></html>`);
+        win.document.close();
+    }
+
+function downloadFullPDF() {
+    const { jsPDF } = window.jspdf;
+    // 'l' অর্থ Landscape মোড যাতে সব কলাম সুন্দরভাবে ধরে
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    // PDF টাইটেল
+    doc.setFontSize(18);
+    doc.text("Student Registration Full List", 14, 15);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text("Generated on: " + new Date().toLocaleString(), 14, 22);
+
+    // এখানে Action কলামটি বাদ দিয়ে শুধুমাত্র প্রয়োজনীয় ফিল্ডগুলো নেওয়া হয়েছে
+    const rows = students.map(s => [
+        s.name, 
+        s.school, 
+        s.religion, 
+        s.sex, 
+        s.blood, 
+        s.dob, 
+        s.class, 
+        s.branch, 
+        s.roll, 
+        s.reg, 
+        s.mobile
+    ]);
+
+    // টেবিল কলাম হেডার (Action বাদে)
+    const head = [['Name', 'School', 'Religion', 'Sex', 'Blood', 'DOB', 'Class', 'Branch', 'Roll', 'Reg No', 'Mobile']];
+
+    doc.autoTable({
+        head: head,
+        body: rows,
+        startY: 30,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 2 }, // ফন্ট সাইজ কিছুটা কমানো হয়েছে যাতে সব তথ্য ধরে
+        headStyles: { fillColor: [52, 58, 64], textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { top: 30 }
+    });
+
+    doc.save("Student_Full_Report.pdf");
+}
+
+    function updatePagination(totalItems) {
+        const box = document.getElementById('paginationBox');
+        box.innerHTML = '';
+        const pages = Math.ceil(totalItems / limit);
+        if(pages <= 1) return;
+        
+        for(let i=1; i<=pages; i++) {
+            let b = document.createElement('button');
+            b.innerText = i;
+            b.className = `page-link ${i === currentPage ? 'active' : ''}`;
+            b.onclick = () => { 
+                currentPage = i; 
+                const query = document.getElementById('searchInput').value.toLowerCase();
+                const currentList = students.filter(s => s.reg.toString().toLowerCase().includes(query));
+                renderData(currentList); 
+            };
+            box.appendChild(b);
+        }
+    }
+</script>
+
+</body>
+</html>
